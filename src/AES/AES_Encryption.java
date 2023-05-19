@@ -4,7 +4,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
-import java.io.File;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -16,21 +16,36 @@ public class AES_Encryption {
     private String password;
     private int keyLength;
     private String path;
+
     Scanner scan = new Scanner(System.in);
 
-    public AES_Encryption(String password, int keyLength, String path ) {
-        this.password = password;
-        this.keyLength = keyLength;
-        this.path = path;
-    }
+    EncryptionManager em;
 
-    public void option1(){
+    public void encrypt(){
         System.out.print("Enter the file path: ");
-        String path = scan.next();
-        this.path = path;
+        path = scan.next();
+        System.out.print("Enter a password: ");
+        password = scan.next();
+        System.out.print("Enter a key length: ");
+        keyLength = scan.nextInt();
+        em = new EncryptionManager();
+        // call the encryption method
+        em.encryptFile(path, getKeyFromPassword(), initializationVector());
 
     }
+    // TODO: decrypt key storage
+    public void decrypt(){
+        System.out.print("Enter the file path: ");
+        path = scan.next();
+        System.out.print("Enter a key: ");
+        String key  = scan.next();
+        System.out.print("Enter a key length: ");
+        keyLength = scan.nextInt();
+        em = new EncryptionManager();
+        // call the encryption method
+        em.decryptFile(path, getKeyFromPassword(), initializationVector());
 
+    }
 
     public AES_Encryption() {
 
@@ -48,7 +63,7 @@ public class AES_Encryption {
         return salt;
     }
 
-    public IvParameterSpec initilazationVector() {
+    public IvParameterSpec initializationVector() {
 
         byte[] Iv = new byte[16];
         try {
@@ -79,7 +94,7 @@ public class AES_Encryption {
             KeySpec keySpec = new PBEKeySpec(password.toCharArray(), createSalt(), 65536, keyLength);// create the key specifics
             SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256"); // get instance of skf with the encryption algorithm
 
-            secretKey = secretKeyFactory.generateSecret(keySpec); // generate the secret key
+            secretKey = new SecretKeySpec(secretKeyFactory.generateSecret(keySpec).getEncoded(), "AES"); // generate the secret key
 
         } catch (NoSuchAlgorithmException e) {
 

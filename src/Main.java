@@ -1,6 +1,7 @@
 import AES.AES_Encryption;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
@@ -12,23 +13,41 @@ public class Main {
         String[] options = {"Encrypt a file", "decrypt a file", "Exit"};
 
         boolean run = true;
+
         while(run){
 
-            int counter =1;
-            for( int i =0; i < options.length; i++){
-                System.out.printf("%d. $s\n", counter, options[i]);
+            try{
+                int counter =1;
+                for( int i =0; i < options.length; i++){
+                    System.out.printf("%d. %s \n", counter, options[i]);
+                    counter++;
+                }
+                System.out.print("select >: ");
+                int choice = scan.nextInt();
+                switch (choice){
+                    case 1:
+                        aes = new AES_Encryption();
+                        aes.encrypt();
+                        break;
+                    case 2:
+                        aes = new AES_Encryption();
+                        aes.decrypt();
+                        break;
+                    case 3:
+                        System.out.println("Session ended....");
+                        run = false;
+                        break;
+
+                    default:
+                        System.out.println("Enter a number within the range");
+                        break;
+                }
+            }catch (InputMismatchException e) {
+                System.out.println("Enter a number !!\n");
+                scan.nextLine();
             }
-            System.out.println("select >: ");
-            int choice = scan.nextInt();
-            switch (choice){
-                case 1:
-                    System.out.print("Enter the file path: ");
-                    String path = scan.next();
-
-
-            }
-
         }
+
 
     }
 }

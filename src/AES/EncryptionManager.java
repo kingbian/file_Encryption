@@ -19,6 +19,9 @@ public class EncryptionManager {
         Iv = iv;
     }
 
+    public EncryptionManager() {
+    }
+
     private SecretKey key;
     IvParameterSpec Iv;
 
