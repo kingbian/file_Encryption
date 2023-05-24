@@ -8,9 +8,14 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Scanner;
 
 public class EncryptionManager {
 
+    static final int IV_LENGTH= 16;
+    static final int SALT_LENGTH= 20;
+
+    private int keyLength;
 
     public EncryptionManager() {
     }
@@ -39,7 +44,8 @@ public class EncryptionManager {
         return key;
     }
 
-    public void encryptFile(String path, String password, int keyLength )  {
+    public void encryptFile(String path, String password )  {
+        this.keyLength = keyLength;
         File inputFile = new File(path);
 
         if (inputFile.length() == 0 || !inputFile.exists()) {
@@ -54,7 +60,7 @@ public class EncryptionManager {
         IvParameterSpec iv = aesUtils.initializationVector();
 
         //create a key from a given password
-        SecretKey key = aesUtils.getKeyFromPassword(password.toCharArray(), salt, keyLength);
+        SecretKey key = aesUtils.getKeyFromPassword(password.toCharArray(), salt);
 
         if (key == null) {
             System.out.println("Error creating key");
@@ -63,17 +69,15 @@ public class EncryptionManager {
         FileInputStream inputStream = null;
 
         try {
-
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             cipher.init(Cipher.ENCRYPT_MODE, key, Iv); // initialize the cipher
-
 
             inputStream = new FileInputStream(inputFile);
             outputStream = new FileOutputStream(path + ".aes");
 
             //prefix the iv and salt  to the file
-            outputStream.write(iv.getIV(),0, 16);
-            outputStream.write(aesUtils.createSalt(), 0,20);
+            outputStream.write(iv.getIV());
+            outputStream.write(salt);
 
             CipherOutputStream cis = new CipherOutputStream(outputStream, cipher);
             byte[] buffer = new byte[1024]; // how much data to read
@@ -114,11 +118,11 @@ public class EncryptionManager {
 
     }
 
-    public void decryptFile(String path, SecretKey key)  {
+    public void decryptFile(String path, String password )  {
 
         File inputFile = new File(path);
 
-        if (inputFile.length() == 0 || !inputFile.exists()) {
+        if (!inputFile.exists() || inputFile.length() == 0) {
             System.out.println("File not found or empty");
         }
         if(!path.contains(".aes")){
@@ -126,32 +130,62 @@ public class EncryptionManager {
             return;
         }
 
-        if (key == null) {
+       /* if (key == null) {
             System.out.println("Enter a valid key");
-        }
+        }*/
+
+
+
         FileOutputStream outputStream = null;
         FileInputStream inputStream = null;
         CipherInputStream cis = null;
-        try {
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.DECRYPT_MODE, key); // initialize the cipher
 
-            //get the key from the file
-            byte[] iv = new byte[16];
+
+        try {
+            outputStream = new FileOutputStream(path + ".unencrypted");
+            inputStream = new FileInputStream(inputFile);
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cis = new CipherInputStream(inputStream, cipher);
+
+            //get the Iv and salt from the file
+            byte[] iv = new byte[IV_LENGTH];
+            byte[] salt = new byte[SALT_LENGTH];
+
+
             int bytesRead = inputStream.read(iv);
-            if (bytesRead != iv.length) {
+            if (bytesRead != IV_LENGTH) {
                 System.out.println("Error reading the encrypted IV from the file");
                 return;
             }
+            StringBuilder si = new StringBuilder();
 
-            IvParameterSpec ivDecrypt = new IvParameterSpec(iv);
+            System.out.println("Heres the decrypte iv"+Base64.getEncoder().encodeToString(iv));
+
+            bytesRead = inputStream.read(salt);
+            if (bytesRead != SALT_LENGTH) {
+                System.out.println("Error reading the encrypted salt from the file");
+                return;
+            }
+            StringBuilder ss = new StringBuilder();
+
+            for( byte i : salt){
+                ss.append(i);
+            }
+            System.out.println("Heres the decrypte iv"+ss);
+
+            //System.out.println("Heres the decrypte salt"+salt);
+            /*for( byte i : salt){
+                System.out.println("Heres the decrypte salt"+i);
+            }*/
+
+            SecretKey key = aesUtils.getKeyFromPassword(password.toCharArray(), salt);
+
+
+            //cipher.init(Cipher.DECRYPT_MODE, key); // initialize the cipher
+
+           IvParameterSpec ivDecrypt = new IvParameterSpec(iv);
             cipher.init(Cipher.DECRYPT_MODE, key, ivDecrypt);
-
-
-
-            outputStream = new FileOutputStream(path + ".unencrypted");
-            inputStream = new FileInputStream(inputFile);
-            cis = new CipherInputStream(inputStream, cipher);
 
 
             byte[] buffer = new byte[1024]; // how much data to read
@@ -175,7 +209,8 @@ public class EncryptionManager {
             System.out.println("File encryption failed due to an Invalid algorithm parm: " + e.getMessage());
 
         } catch (InvalidKeyException e) {
-            System.out.println("File encryption failed due to an Invalid key: " + e.getMessage());
+            System.out.println("File encryption failed due to an Invalid key: " );
+            e.printStackTrace();
         } finally {
            /* if (inputStream != null) {
                 inputStream.close();

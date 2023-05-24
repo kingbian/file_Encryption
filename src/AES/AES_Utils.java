@@ -16,6 +16,8 @@ import java.util.Scanner;
 public class AES_Utils {
     //private String password;
 
+
+
     private String path;
 
     Scanner scan = new Scanner(System.in);
@@ -27,27 +29,27 @@ public class AES_Utils {
         path = scan.next();
         System.out.print("Enter a password: ");
         String password = scan.next();
-        System.out.print("Enter a key length: ");
-       int  keyLength = scan.nextInt();
+       /* System.out.print("Enter a key length: ");
+       int  keyLength = scan.nextInt();*/
         em = new EncryptionManager();
         // call the encryption method
-        em.encryptFile(path, password, keyLength);
+        em.encryptFile(path, password);
 
     }
     // TODO: decrypt key storage
     public void decrypt(){
         System.out.print("Enter the file path: ");
         path = scan.next();
-        System.out.print("Enter a key: ");
-        String key  = scan.next();
-        System.out.println(key);
+        System.out.print("Enter a password: ");
+        String password  = scan.next();
+        System.out.println(password);
         /*System.out.print("Enter a Iv: ");
         String initializeV= scan.next();
         ;*/
 
         em =  new EncryptionManager();
         // call the encryption method
-        em.decryptFile(path, getUserKey(key));
+        em.decryptFile(path, password);
 
     }
 
@@ -93,11 +95,11 @@ public class AES_Utils {
         return new IvParameterSpec(Iv);
     }
 
-    public SecretKey getKeyFromPassword(char[] password, byte[] salt, int keyLength ) {
+    public SecretKey getKeyFromPassword(char[] password, byte[] salt ) {
         SecretKey secretKey = null;
         try {
 
-            KeySpec keySpec = new PBEKeySpec(password,  salt, 65536, keyLength);// create the key specifics
+            KeySpec keySpec = new PBEKeySpec(password,  salt, 65536, 256);// create the key specifics
             SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256"); // get instance of skf with the encryption algorithm
 
             secretKey = new SecretKeySpec(secretKeyFactory.generateSecret(keySpec).getEncoded(), "AES"); // generate the secret key
