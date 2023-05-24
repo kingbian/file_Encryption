@@ -1,4 +1,4 @@
-import AES.AES_Encryption;
+import AES.AES_Utils;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.InputMismatchException;
@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws NoSuchAlgorithmException {
         Scanner scan = new Scanner(System.in);
-        AES_Encryption aes;
+        AES_Utils aes;
 
         System.out.println("Welcome to your file encryption Manager!!");
         String[] options = {"Encrypt a file", "decrypt a file", "Exit"};
@@ -26,18 +26,17 @@ public class Main {
                 int choice = scan.nextInt();
                 switch (choice){
                     case 1:
-                        aes = new AES_Encryption();
+                        aes = new AES_Utils();
                         aes.encrypt();
                         break;
                     case 2:
-                        aes = new AES_Encryption();
+                        aes = new AES_Utils();
                         aes.decrypt();
                         break;
                     case 3:
                         System.out.println("Session ended....");
                         run = false;
                         break;
-
                     default:
                         System.out.println("Enter a number within the range");
                         break;
