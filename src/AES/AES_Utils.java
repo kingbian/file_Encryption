@@ -38,18 +38,14 @@ public class AES_Utils {
     }
     // TODO: decrypt key storage
     public void decrypt(){
-        System.out.print("Enter the file path: ");
-        path = scan.next();
-        System.out.print("Enter a password: ");
-        String password  = scan.next();
-        System.out.println(password);
+
         /*System.out.print("Enter a Iv: ");
         String initializeV= scan.next();
         ;*/
 
         em =  new EncryptionManager();
         // call the encryption method
-        em.decryptFile(path, password);
+        em.decryptFile(scan);
 
     }
 
@@ -100,7 +96,7 @@ public class AES_Utils {
         try {
 
             KeySpec keySpec = new PBEKeySpec(password,  salt, 65536, 256);// create the key specifics
-            SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256"); // get instance of skf with the encryption algorithm
+            SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256"); // get the encryption algorithm
 
             secretKey = new SecretKeySpec(secretKeyFactory.generateSecret(keySpec).getEncoded(), "AES"); // generate the secret key
 

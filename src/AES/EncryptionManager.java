@@ -12,39 +12,41 @@ import java.util.Scanner;
 
 public class EncryptionManager {
 
-    static final int IV_LENGTH= 16;
-    static final int SALT_LENGTH= 20;
+    static final int IV_LENGTH = 16;
+    static final int SALT_LENGTH = 20;
 
     private int keyLength;
 
     public EncryptionManager() {
     }
 
-   AES_Utils aesUtils = new AES_Utils();
+    AES_Utils aesUtils = new AES_Utils();
     IvParameterSpec Iv;
 
     /**
      * Print the Iv
+     *
      * @param iv
      * @return
      */
-    public String iv(IvParameterSpec iv){
+    public String iv(IvParameterSpec iv) {
         byte[] data = iv.getIV();
-        return  Base64.getEncoder().encodeToString(data);
+        return Base64.getEncoder().encodeToString(data);
     }
 
     /**
      * used to display the secret key
+     *
      * @param secretKey
      * @return
      */
-    private String checkKey( SecretKey secretKey){
+    private String checkKey(SecretKey secretKey) {
         byte[] data = secretKey.getEncoded();
         String key = Base64.getEncoder().encodeToString(data);
         return key;
     }
 
-    public void encryptFile(String path, String password )  {
+    public void encryptFile(String path, String password) {
         this.keyLength = keyLength;
         File inputFile = new File(path);
 
@@ -92,15 +94,15 @@ public class EncryptionManager {
                 cis.write(buffer, 0, count);
             }
             cis.flush();
-            System.out.printf("File is encrypted !!!\nHere is the key: %s and your IV: %s\n" +
-                    "Inorder to decrypt the file you will need those keys !!!\n", checkKey(key), iv(iv) );
+            System.out.printf("File is encrypted\n");
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
             System.out.println("Encryption failed do to padding error");
 
-        } catch (IOException e){
+        } catch (IOException e) {
             System.out.println("error found with the file");
+            e.getStackTrace();
         } catch (InvalidAlgorithmParameterException e) {
-            System.out.println("File encryption failed due to an Invalid algorithm parm: " + e.getMessage());
+            System.out.println("File encryption failed due to an Invalid algorithm: " + e.getMessage());
 
         } catch (InvalidKeyException e) {
             System.out.println("File encryption failed due to an Invalid key: " + e.getMessage());
@@ -111,29 +113,35 @@ public class EncryptionManager {
                 }
                 if (outputStream != null) {
                     outputStream.close();
-                }}catch (IOException e) {
+                }
+            } catch (IOException e) {
                 System.out.println("Error occurred while closing the streams");
             }
         }
 
     }
 
-    public void decryptFile(String path, String password )  {
+    public void decryptFile(Scanner scan) {
+        System.out.print("Enter the file path: ");
+        String path = scan.next();
 
+        if (!path.contains(".aes")) {
+            System.out.println("Please select a file previously encrypted");
+            return;
+        }
+        System.out.print("Enter a password: ");
+        String password  = scan.next();
+       // System.out.println(password);
         File inputFile = new File(path);
 
         if (!inputFile.exists() || inputFile.length() == 0) {
             System.out.println("File not found or empty");
         }
-        if(!path.contains(".aes")){
-            System.out.println("Please select a file previously encrypted");
-            return;
-        }
+
 
        /* if (key == null) {
             System.out.println("Enter a valid key");
         }*/
-
 
 
         FileOutputStream outputStream = null;
@@ -160,7 +168,7 @@ public class EncryptionManager {
             }
             StringBuilder si = new StringBuilder();
 
-            System.out.println("Heres the decrypte iv"+Base64.getEncoder().encodeToString(iv));
+            // System.out.println("Heres the decrypte iv"+Base64.getEncoder().encodeToString(iv));
 
             bytesRead = inputStream.read(salt);
             if (bytesRead != SALT_LENGTH) {
@@ -169,10 +177,10 @@ public class EncryptionManager {
             }
             StringBuilder ss = new StringBuilder();
 
-            for( byte i : salt){
+            for (byte i : salt) {
                 ss.append(i);
             }
-            System.out.println("Heres the decrypte iv"+ss);
+            System.out.println("Here'ss the decrypted salt: " + ss);
 
             //System.out.println("Heres the decrypte salt"+salt);
             /*for( byte i : salt){
@@ -184,7 +192,7 @@ public class EncryptionManager {
 
             //cipher.init(Cipher.DECRYPT_MODE, key); // initialize the cipher
 
-           IvParameterSpec ivDecrypt = new IvParameterSpec(iv);
+            IvParameterSpec ivDecrypt = new IvParameterSpec(iv);
             cipher.init(Cipher.DECRYPT_MODE, key, ivDecrypt);
 
 
@@ -194,7 +202,7 @@ public class EncryptionManager {
                 outputStream.write(buffer, 0, count);
             }
 
-
+            
             outputStream.flush();
             System.out.println("File is decrypted !!!");
             outputStream.close();
@@ -203,13 +211,14 @@ public class EncryptionManager {
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
             System.out.println("Encryption failed do to padding error");
 
-        } catch (IOException e){
-            System.out.println("error found with the file");
+        } catch (IOException e) {
+            System.out.println("Unable to decrypt the file");
+
         } catch (InvalidAlgorithmParameterException e) {
             System.out.println("File encryption failed due to an Invalid algorithm parm: " + e.getMessage());
-
+            e.getStackTrace();
         } catch (InvalidKeyException e) {
-            System.out.println("File encryption failed due to an Invalid key: " );
+            System.out.println("File encryption failed due to an Invalid key: ");
             e.printStackTrace();
         } finally {
            /* if (inputStream != null) {

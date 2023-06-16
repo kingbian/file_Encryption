@@ -18,6 +18,7 @@ public class Main {
 
             try{
                 int counter =1;
+                System.out.println("");
                 for( int i =0; i < options.length; i++){
                     System.out.printf("%d. %s \n", counter, options[i]);
                     counter++;
